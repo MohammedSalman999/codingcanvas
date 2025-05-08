@@ -119,7 +119,7 @@ export default function Contact() {
               </CardContent>
             </Card>
 
-            <Card className="border border-border overflow-hidden transition-all duration-300 hover:shadow-md">
+            {/* <Card className="border border-border overflow-hidden transition-all duration-300 hover:shadow-md">
               <CardContent className="p-6 flex items-start space-x-4">
                 <div className="bg-primary/10 p-3 rounded-full text-primary flex-shrink-0">
                   <MessageSquare className="h-6 w-6" />
@@ -137,7 +137,7 @@ export default function Contact() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
           <div className="lg:col-span-2">
