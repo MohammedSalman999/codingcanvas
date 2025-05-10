@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Map, Mail, Phone, MessageSquare, Send } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Map, Mail, Phone, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+import { sendEmail } from "@/app/actions/sendEmail";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -17,7 +18,7 @@ export default function Contact() {
     message: "",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -28,22 +29,29 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
-      toast({
-        title: "Message sent!",
-        description: "We'll get back to you as soon as possible.",
-      });
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-      });
-      setIsSubmitting(false);
-    }, 1500);
+    startTransition(async () => {
+      const result = await sendEmail(formData);
+
+      if (result?.success) {
+        toast({
+          title: "Message sent!",
+          description: "We'll get back to you soon.",
+        });
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          message: "",
+        });
+      } else {
+        toast({
+          title: "Error!",
+          description: "Failed to send message. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
   };
 
   return (
@@ -53,8 +61,8 @@ export default function Contact() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Get in Touch</h2>
           <div className="h-1 w-20 bg-primary mx-auto mb-6"></div>
           <p className="text-muted-foreground text-lg">
-            Ready to start your project? Contact us today and let's bring your
-            vision to life.
+            Ready to start your project? Contact us today and let&aois;s bring
+            your vision to life.
           </p>
         </div>
 
@@ -118,26 +126,6 @@ export default function Contact() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* <Card className="border border-border overflow-hidden transition-all duration-300 hover:shadow-md">
-              <CardContent className="p-6 flex items-start space-x-4">
-                <div className="bg-primary/10 p-3 rounded-full text-primary flex-shrink-0">
-                  <MessageSquare className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-lg mb-1">Live Chat</h3>
-                  <p className="text-muted-foreground mb-2">
-                    Chat with our support team
-                  </p>
-                  <Button
-                    variant="link"
-                    className="px-0 text-primary hover:underline"
-                  >
-                    Start a conversation
-                  </Button>
-                </div>
-              </CardContent>
-            </Card> */}
           </div>
 
           <div className="lg:col-span-2">
@@ -198,12 +186,8 @@ export default function Contact() {
                     />
                   </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
+                  <Button type="submit" className="w-full" disabled={isPending}>
+                    {isPending ? (
                       <span className="flex items-center">
                         <svg
                           className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
